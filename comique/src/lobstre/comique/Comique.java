@@ -1,15 +1,10 @@
 package lobstre.comique;
 
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
+import lobstre.comique.util.Helper;
 
 public class Comique {
     public static void main (final String[] args) {
-        final GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment ();
-        final GraphicsDevice gd = ge.getDefaultScreenDevice ();
-        final int width = gd.getDisplayMode ().getWidth ();
-        final int height = gd.getDisplayMode ().getHeight ();
-        System.out.println (width);
-        System.out.println (height);
+        final int[] result = Helper.getScreenResolution ();
+        System.out.println (result [0]);
     }
 }
