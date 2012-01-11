@@ -7,6 +7,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 
@@ -30,22 +33,42 @@ public class Helper {
     /**
      * Loads all files
      * 
-     * @param directory a directory {@link File}
-     * @return a {@link Map} of {@link Integer} page key to {@link BufferedImage}
-     * images
+     * @param directory
+     *            a directory {@link File}
+     * @return a {@link Map} of {@link Integer} page key to
+     *         {@link BufferedImage} images
      */
     public static Map<Integer, BufferedImage> loadFiles (final File directory) {
+        // CPUs
+        final int cpus = Runtime.getRuntime ().availableProcessors ();
+        final ExecutorService es = Executors.newFixedThreadPool (cpus);
+
+        // Loading all images
         final Map<Integer, BufferedImage> images = new ConcurrentSkipListMap<Integer, BufferedImage> ();
         final File[] files = directory.listFiles ();
         for (int i = 0; i < files.length; i++) {
             final File f = files [i];
-            try {
-                images.put (i, ImageIO.read (f));
-            } catch (final IOException e) {
-                e.printStackTrace ();
-                continue;
-            }
+            final int pageId = i;
+            es.submit (new Runnable () {
+                @Override
+                public void run () {
+                    try {
+                        images.put (pageId, ImageIO.read (f));
+                    } catch (final IOException e) {
+                        e.printStackTrace ();
+                    }
+                }
+            });
         }
+        
+        // Shutdown worker.
+        es.shutdown ();
+        try {
+            es.awaitTermination (3600L, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        
         return images;
     }
 
