@@ -27,7 +27,7 @@ public class Comique {
         
         final Map<Integer, BufferedImage> images = Helper.loadFiles (directory);
         
-        System.out.println (images);
+        System.out.println (images.size ());
         
         final int[] result = Helper.getScreenResolution ();
         System.out.println (result [0]);
