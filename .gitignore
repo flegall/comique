@@ -1,0 +1,10 @@
+# Compiled source #
+###################
+*.class
+*.jar
+eclipse-project/output/*
+eclipse-project/bin/*
+
+
+# Mac stuff
+.DS_Store
