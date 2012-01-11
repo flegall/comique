@@ -2,8 +2,8 @@
 ###################
 *.class
 *.jar
-eclipse-project/output/*
-eclipse-project/bin/*
+comique/output/*
+comique/bin/*
 
 
 # Mac stuff
