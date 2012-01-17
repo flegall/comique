@@ -25,11 +25,10 @@ public class Comique {
             return;
         }
         
-        final Map<Integer, BufferedImage> images = Helper.loadFiles (directory);
+        final int[] result = Helper.getScreenResolution ();
+        final Map<Integer, BufferedImage> images = Helper.loadFiles (directory, result [0]);
         
         System.out.println (images.size ());
         
-        final int[] result = Helper.getScreenResolution ();
-        System.out.println (result [0]);
     }
 }

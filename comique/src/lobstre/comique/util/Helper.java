@@ -2,6 +2,7 @@ package lobstre.comique.util;
 
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -35,10 +36,12 @@ public class Helper {
      * 
      * @param directory
      *            a directory {@link File}
+     * @param width
+     *            the display width
      * @return a {@link Map} of {@link Integer} page key to
      *         {@link BufferedImage} images
      */
-    public static Map<Integer, BufferedImage> loadFiles (final File directory) {
+    public static Map<Integer, BufferedImage> loadFiles (final File directory, final int width) {
         // CPUs
         final int cpus = Runtime.getRuntime ().availableProcessors ();
         final ExecutorService es = Executors.newFixedThreadPool (cpus);
@@ -53,9 +56,24 @@ public class Helper {
                 @Override
                 public void run () {
                     try {
-                        images.put (pageId, ImageIO.read (f));
+                        final BufferedImage sourceImage = ImageIO.read (f);
+                        
+                        final double srcWidth = sourceImage.getWidth ();
+                        final double srcHeight = sourceImage.getHeight ();
+                        final double screenWidth = width;
+                        final double desiredHeight = srcHeight * screenWidth / srcWidth;
+                        final int height = (int) Math.ceil (desiredHeight);
+                        System.out.println (height);
+                        
+                        final Image scaledSource = sourceImage.getScaledInstance (width, height, Image.SCALE_SMOOTH);
+                        final BufferedImage targetImage = new BufferedImage (width, height, sourceImage.getType ());
+                        targetImage.createGraphics ().drawImage (scaledSource, 0, 0, null);
+                        images.put (pageId, targetImage);
+                        System.out.println (pageId);
                     } catch (final IOException e) {
                         e.printStackTrace ();
+                    } catch (final Throwable t) {
+                        t.printStackTrace ();
                     }
                 }
             });
@@ -65,7 +83,7 @@ public class Helper {
         es.shutdown ();
         try {
             es.awaitTermination (3600L, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
+        } catch (final InterruptedException e) {
             e.printStackTrace();
         }
         
