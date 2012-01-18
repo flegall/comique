@@ -56,7 +56,12 @@ public class Helper {
                 @Override
                 public void run () {
                     try {
-                        final BufferedImage sourceImage = ImageIO.read (f);
+                        final BufferedImage sourceImage;
+                        // Silly concurrency bug in JVM : http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6986863
+                        // Remove synchronized when fixed :(
+                        synchronized (Helper.class) {
+                            sourceImage = ImageIO.read (f);
+                        }
                         
                         final double srcWidth = sourceImage.getWidth ();
                         final double srcHeight = sourceImage.getHeight ();
