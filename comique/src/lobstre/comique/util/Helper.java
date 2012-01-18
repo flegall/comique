@@ -57,7 +57,7 @@ public class Helper {
                 public void run () {
                     try {
                         final BufferedImage sourceImage;
-                        // Silly concurrency bug in JVM : http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6986863
+                        // Silly concurrency bug in jpeg plugin : http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6986863
                         // Remove synchronized when fixed :(
                         synchronized (Helper.class) {
                             sourceImage = ImageIO.read (f);
