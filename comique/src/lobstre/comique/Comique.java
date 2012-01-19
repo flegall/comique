@@ -5,6 +5,7 @@ import java.io.File;
 import java.util.Map;
 
 import lobstre.comique.util.Helper;
+import lobstre.comique.util.Helper.ProgressListener;
 
 public class Comique {
     public static void main (final String[] args) {
@@ -26,9 +27,17 @@ public class Comique {
         }
         
         final int[] result = Helper.getScreenResolution ();
-        final Map<Integer, BufferedImage> images = Helper.loadFiles (directory, result [0]);
+        final Map<Integer, BufferedImage> images = Helper.loadFiles (
+                directory, 
+                result [0], 
+                new ProgressListener() {
+                    @Override
+                    public void progressed (int processedPages, int totalPages) {
+                        System.out.println (processedPages + "/" + totalPages);
+                    }
+                });
         
-        System.out.println (images.size ());
+        System.out.println ("Done: " + images.size () + " images loaded!");
         
     }
 }
