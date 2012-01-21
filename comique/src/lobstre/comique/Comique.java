@@ -8,6 +8,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.Map;
@@ -130,16 +131,13 @@ public class Comique {
                 
                 
                 final MouseAdapter mouseListener = new MouseAdapter () {
-                    private int y;
                     @Override
                     public void mouseDragged(final MouseEvent e) {
                         final int eventY = e.getYOnScreen ();
                         
                         final int diffY = - eventY + y;
                         
-                        final Point vp = jsp.getViewport ().getViewPosition ();
-                        vp.translate (0, diffY);
-                        jc.scrollRectToVisible (new Rectangle (vp, jsp.getViewport ().getSize ()));
+                        translate (diffY);
                         
                         y = eventY;
                     }
@@ -147,9 +145,36 @@ public class Comique {
                     public void mousePressed (MouseEvent e) {
                         y = e.getYOnScreen ();
                     }
+                    
+                    @Override
+                    public void mouseWheelMoved (MouseWheelEvent e) {
+                        final int wheelRotation = e.getWheelRotation ();
+                        final int[] counter = new int [1];
+                        counter[0] = 40;
+                        SwingUtilities.invokeLater (new Runnable () {
+                            @Override
+                            public void run () {
+                                if (counter[0] > 0) {
+                                    translate (wheelRotation);
+                                    counter[0]--;
+                                    SwingUtilities.invokeLater (this);
+                                }
+                            }
+                        });
+                    }
+                    
+                    private void translate (final int diffY) {
+                        final Point vp = jsp.getViewport ().getViewPosition ();
+                        vp.translate (0, diffY);
+                        jc.scrollRectToVisible (new Rectangle (vp, jsp.getViewport ().getSize ()));
+                    }
+                    
+                    private int y;
                 };
+                
                 jc.addMouseMotionListener (mouseListener);
                 jc.addMouseListener (mouseListener);
+                jc.addMouseWheelListener (mouseListener);
             }
         });
     }
