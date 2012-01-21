@@ -169,9 +169,15 @@ public class Comique {
                     @Override
                     public void eventDispatched (AWTEvent event) {
                         if (event instanceof KeyEvent) {
-                            KeyEvent e = (KeyEvent) event;
+                            final KeyEvent e = (KeyEvent) event;
                             if (e.getKeyCode () == KeyEvent.VK_ESCAPE) {
                                 System.exit (0);
+                            }
+                            if (e.getKeyCode () == KeyEvent.VK_UP) {
+                                smoothScroll (-1);
+                            }
+                            if (e.getKeyCode () == KeyEvent.VK_DOWN) {
+                                smoothScroll (+1);
                             }
                         }
                     }
