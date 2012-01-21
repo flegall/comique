@@ -1,11 +1,14 @@
 package lobstre.comique;
 
+import java.awt.AWTEvent;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.AWTEventListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
@@ -84,6 +87,9 @@ public class Comique {
         System.out.println ("Done: " + images.size () + " images loaded!");
 
         SwingUtilities.invokeLater (new Runnable () {
+            private JScrollPane jsp;
+            private JComponent jc;
+            
             @Override
             public void run () {
                 jFrame [0].setVisible (false);
@@ -103,7 +109,7 @@ public class Comique {
                 }
                 final int height = totalHeight;
 
-                final JComponent jc = new JComponent() {
+                jc = new JComponent() {
                     @Override
                     protected void paintComponent (final Graphics g) {
                         super.paintComponent (g);
@@ -124,7 +130,7 @@ public class Comique {
                 };
                 
                 
-                final JScrollPane jsp = new JScrollPane (jc);
+                jsp = new JScrollPane (jc);
                 jsp.setHorizontalScrollBarPolicy (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
                 jsp.setVerticalScrollBarPolicy (ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
                 jf.setContentPane (jsp);
@@ -149,24 +155,7 @@ public class Comique {
                     @Override
                     public void mouseWheelMoved (MouseWheelEvent e) {
                         final int wheelRotation = e.getWheelRotation ();
-                        final int[] counter = new int [1];
-                        counter[0] = 40;
-                        SwingUtilities.invokeLater (new Runnable () {
-                            @Override
-                            public void run () {
-                                if (counter[0] > 0) {
-                                    translate (wheelRotation);
-                                    counter[0]--;
-                                    SwingUtilities.invokeLater (this);
-                                }
-                            }
-                        });
-                    }
-                    
-                    private void translate (final int diffY) {
-                        final Point vp = jsp.getViewport ().getViewPosition ();
-                        vp.translate (0, diffY);
-                        jc.scrollRectToVisible (new Rectangle (vp, jsp.getViewport ().getSize ()));
+                        smoothScroll (wheelRotation);
                     }
                     
                     private int y;
@@ -175,6 +164,39 @@ public class Comique {
                 jc.addMouseMotionListener (mouseListener);
                 jc.addMouseListener (mouseListener);
                 jc.addMouseWheelListener (mouseListener);
+                
+                jc.getToolkit ().addAWTEventListener (new AWTEventListener() {
+                    @Override
+                    public void eventDispatched (AWTEvent event) {
+                        if (event instanceof KeyEvent) {
+                            KeyEvent e = (KeyEvent) event;
+                            if (e.getKeyCode () == KeyEvent.VK_ESCAPE) {
+                                System.exit (0);
+                            }
+                        }
+                    }
+                }, AWTEvent.KEY_EVENT_MASK);
+            }
+
+            private void smoothScroll (final int wheelRotation) {
+                final int[] counter = new int [1];
+                counter[0] = 40;
+                SwingUtilities.invokeLater (new Runnable () {
+                    @Override
+                    public void run () {
+                        if (counter[0] > 0) {
+                            translate (wheelRotation);
+                            counter[0]--;
+                            SwingUtilities.invokeLater (this);
+                        }
+                    }
+                });
+            }
+            
+            private void translate (final int diffY) {
+                final Point vp = jsp.getViewport ().getViewPosition ();
+                vp.translate (0, diffY);
+                jc.scrollRectToVisible (new Rectangle (vp, jsp.getViewport ().getSize ()));
             }
         });
     }
