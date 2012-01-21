@@ -4,9 +4,12 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.Collections;
 import java.util.Map;
 
 import javax.swing.JComponent;
@@ -14,14 +17,13 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 
 import lobstre.comique.util.Helper;
 import lobstre.comique.util.Helper.ProgressListener;
 
 public class Comique {
-    public static boolean loadFiles = true;
-
     public static void main (final String[] args) {
         if (args.length != 1) {
             System.out.println ("Usage : Comique directory");
@@ -65,32 +67,27 @@ public class Comique {
             }
         });
 
-        final Map<Integer, BufferedImage> images;
-        if (loadFiles) {
-            images = Helper.loadFiles (directory, screenRes [0], new ProgressListener () {
-                @Override
-                public void progressed (final int processedPages, final int totalPages) {
-                    SwingUtilities.invokeLater (new Runnable () {
-                        @Override
-                        public void run () {
-                            progressBar [0].setValue (processedPages);
-                            progressBar [0].setMaximum (totalPages);
-                        }
-                    });
-                }
-            });
+        final Map<Integer, BufferedImage> images = Helper.loadFiles (directory, screenRes [0], new ProgressListener () {
+            @Override
+            public void progressed (final int processedPages, final int totalPages) {
+                SwingUtilities.invokeLater (new Runnable () {
+                    @Override
+                    public void run () {
+                        progressBar [0].setValue (processedPages);
+                        progressBar [0].setMaximum (totalPages);
+                    }
+                });
+            }
+        });
 
-            System.out.println ("Done: " + images.size () + " images loaded!");
-        } else {
-            images = Collections.emptyMap ();
-        }
+        System.out.println ("Done: " + images.size () + " images loaded!");
 
         SwingUtilities.invokeLater (new Runnable () {
             @Override
             public void run () {
                 jFrame [0].setVisible (false);
 
-                JFrame jf = new JFrame ("Comique");
+                final JFrame jf = new JFrame ("Comique");
                 jf.setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
                 jf.setUndecorated (true);
                 jf.setSize (jf.getToolkit ().getScreenSize ());
@@ -100,18 +97,18 @@ public class Comique {
                 jf.setVisible (true);
 
                 int totalHeight = 0;
-                for (BufferedImage bi : images.values ()) {
+                for (final BufferedImage bi : images.values ()) {
                     totalHeight += bi.getHeight ();
                 }
                 final int height = totalHeight;
 
                 final JComponent jc = new JComponent() {
                     @Override
-                    protected void paintComponent (Graphics g) {
+                    protected void paintComponent (final Graphics g) {
                         super.paintComponent (g);
                         
                         int y = 0;
-                        for (BufferedImage bi : images.values ()) {
+                        for (final BufferedImage bi : images.values ()) {
                             g.drawImage (bi, 0, y, null);
                             y += bi.getHeight ();
                         }
@@ -124,9 +121,35 @@ public class Comique {
 
                     private static final long serialVersionUID = 1L;
                 };
+                
+                
                 final JScrollPane jsp = new JScrollPane (jc);
-                jsp.setHorizontalScrollBarPolicy (JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+                jsp.setHorizontalScrollBarPolicy (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+                jsp.setVerticalScrollBarPolicy (ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
                 jf.setContentPane (jsp);
+                
+                
+                final MouseAdapter mouseListener = new MouseAdapter () {
+                    private int y;
+                    @Override
+                    public void mouseDragged(final MouseEvent e) {
+                        final int eventY = e.getYOnScreen ();
+                        
+                        final int diffY = - eventY + y;
+                        
+                        final Point vp = jsp.getViewport ().getViewPosition ();
+                        vp.translate (0, diffY);
+                        jc.scrollRectToVisible (new Rectangle (vp, jsp.getViewport ().getSize ()));
+                        
+                        y = eventY;
+                    }
+                    @Override
+                    public void mousePressed (MouseEvent e) {
+                        y = e.getYOnScreen ();
+                    }
+                };
+                jc.addMouseMotionListener (mouseListener);
+                jc.addMouseListener (mouseListener);
             }
         });
     }

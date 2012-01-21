@@ -16,6 +16,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.imageio.ImageIO;
 
 public class Helper {
+    
+    public static final boolean LOAD_ONLY_FIVE_PAGES = false;
 
     /**
      * Gets the screen resolution in an integer array.
@@ -81,8 +83,12 @@ public class Helper {
             final int pageId = i;
             es.submit (new Runnable () {
                 @Override
+                @SuppressWarnings("unused")
                 public void run () {
                     try {
+                        if (pageId > 5 && LOAD_ONLY_FIVE_PAGES) {
+                            return;
+                        }
                         final BufferedImage sourceImage;
                         // Silly concurrency bug in jpeg plugin : http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6986863
                         // Remove synchronized when fixed :(
