@@ -3,7 +3,6 @@ package lobstre.comique;
 import java.awt.FlowLayout;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
 import javax.swing.JFrame;
@@ -35,36 +34,29 @@ public class Comique {
         
         final int[] screenRes = Helper.getScreenResolution ();
         final JProgressBar[] progressBar = new JProgressBar [1];
+        final JFrame[] jFrame = new JFrame [1];
         
-        try {
-            SwingUtilities.invokeAndWait (new Runnable () {
-                @Override
-                public void run () {
-                    final JFrame jf = new JFrame ("Comique");
-                    jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                    
-                    jf.setSize (PROGRESS_BAR_WIDTH, PROGRESS_BAR_HEIGHT);
-                    jf.setLocation (screenRes[0] / 2  - PROGRESS_BAR_WIDTH / 2, 
-                            screenRes[1] / 2 - PROGRESS_BAR_HEIGHT / 2);
-                    jf.setResizable (false);
-                    
-                    final JPanel pane = new JPanel ();
-                    pane.setLayout(new FlowLayout());
-                    progressBar[0] = new JProgressBar(0, 1000);
-                    progressBar[0].setValue(0);
-                    progressBar[0].setStringPainted(true);
-                    pane.add(progressBar[0]);
-                    jf.setContentPane (pane);
-                    jf.setVisible (true);
-                }
-            });
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            return;
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-            return;
-        }
+        SwingUtilities.invokeLater (new Runnable () {
+            @Override
+            public void run () {
+                jFrame[0] = new JFrame ("Comique");
+                jFrame[0].setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                
+                jFrame[0].setSize (PROGRESS_BAR_WIDTH, PROGRESS_BAR_HEIGHT);
+                jFrame[0].setLocation (screenRes[0] / 2  - PROGRESS_BAR_WIDTH / 2, 
+                        screenRes[1] / 2 - PROGRESS_BAR_HEIGHT / 2);
+                jFrame[0].setResizable (false);
+                
+                final JPanel pane = new JPanel ();
+                pane.setLayout(new FlowLayout());
+                progressBar[0] = new JProgressBar(0, 1000);
+                progressBar[0].setValue(0);
+                progressBar[0].setStringPainted(true);
+                pane.add(progressBar[0]);
+                jFrame[0].setContentPane (pane);
+                jFrame[0].setVisible (true);
+            }
+        });
         
 
         final Map<Integer, BufferedImage> images = Helper.loadFiles (
@@ -86,6 +78,13 @@ public class Comique {
                 });
         
         System.out.println ("Done: " + images.size () + " images loaded!");
+        
+        SwingUtilities.invokeLater (new Runnable () {
+            @Override
+            public void run () {
+                jFrame[0].setVisible (false);
+            }
+        });
     }
     
     private static final int PROGRESS_BAR_WIDTH = 200;
