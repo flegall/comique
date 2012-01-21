@@ -72,7 +72,9 @@ public class Comique {
                 screenRes [0], 
                 new ProgressListener() {
                     @Override
-                    public void progressed (final int processedPages, final int totalPages) {
+                    public void progressed (
+                            final int processedPages, 
+                            final int totalPages) {
                         SwingUtilities.invokeLater (new Runnable () {
                             @Override
                             public void run () {
@@ -86,6 +88,6 @@ public class Comique {
         System.out.println ("Done: " + images.size () + " images loaded!");
     }
     
-    public static final int PROGRESS_BAR_WIDTH = 200;
-    public static final int PROGRESS_BAR_HEIGHT = 60;
+    private static final int PROGRESS_BAR_WIDTH = 200;
+    private static final int PROGRESS_BAR_HEIGHT = 60;
 }
