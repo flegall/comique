@@ -93,6 +93,7 @@ public class Comique {
             @Override
             public void run () {
                 jFrame [0].setVisible (false);
+                jFrame [0].dispose ();
 
                 final JFrame jf = new JFrame ("Comique");
                 jf.setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
