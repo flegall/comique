@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<project name="comique" default="dist" basedir="." >
+
+  <target name="clean">
+    <delete failonerror="false">
+      <fileset dir="bin/" includes="**/*.class" />
+      <fileset dir="output/" includes="**/comique.jar" />
+    </delete>
+  </target>  
+  
+  <target name="build">
+    <mkdir dir="bin/" />
+    <mkdir dir="output" />
+    <javac srcdir="src/" destdir="bin/"/>
+  </target>
+  
+  <target name="dist" depends="clean,build"
+        description="generate the distribution" >
+    <jar jarfile="output/comique.jar" basedir="bin/">
+        <manifest>
+            <attribute name="Main-Class" value="lobstre.comique.Comique"/>
+        </manifest>
+   </jar>
+  </target>
+</project>
