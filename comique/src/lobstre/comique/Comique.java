@@ -61,7 +61,7 @@ public class Comique {
                 final JFrame jf = new JFrame ("Comique");
                 jf.setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
                 jf.setUndecorated (true);
-                jf.setSize (jf.getToolkit ().getScreenSize ());
+                jf.setSize (new Dimension (screenRes[0], screenRes [1]));
                 jf.setLocationRelativeTo (null);
                 jf.setExtendedState (Frame.MAXIMIZED_BOTH);
                 jf.validate ();
@@ -95,6 +95,7 @@ public class Comique {
                 
                 
                 jsp = new JScrollPane (jc);
+                jsp.setBorder (null);
                 jsp.setHorizontalScrollBarPolicy (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
                 jsp.setVerticalScrollBarPolicy (ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
                 jf.setContentPane (jsp);
