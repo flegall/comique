@@ -41,6 +41,8 @@ import java.io.Reader;
  * </p>
  * <p><em>Original author: Robert Harder, rharder@usa.net</em></p>
  * <p>2007-09-12 Nathan Blomquist -- Linux (KDE/Gnome) support added.</p>
+ * <p>2012-01-22 https://github.com/flegall -- Java generics support added 
+ * and package renamed</p> 
  *
  * @author  Robert Harder
  * @author  rharder@users.sf.net
