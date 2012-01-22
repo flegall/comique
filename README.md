@@ -10,7 +10,7 @@ It is fast, it displays pages and scrolls very very smoothly, but it requires as
 
 # Usage
 
-- Compile or download comique.jar from https://github.com/flegall/comique/raw/gh-pages/comique.jar
+- Compile or download comique.jar from [comique.jar](https://github.com/flegall/comique/raw/gh-pages/comique.jar)
 - Launch comique.jar (eventually make a script that correctly sets the appropriate memory -Xmx if you're using a large display)
 - Drop a folder or a file within a folder onto the dialog.
 - Wait for loading :)
