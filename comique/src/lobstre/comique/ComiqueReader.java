@@ -13,6 +13,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.image.BufferedImage;
 import java.util.Map;
+import java.util.NavigableSet;
+import java.util.TreeSet;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -35,6 +37,12 @@ public class ComiqueReader {
         this.screenRes = screenRes;
         this.jc = new Renderer ();
         this.jsp = new JScrollPane (jc);
+        int totalHeight = 0;
+        for (final BufferedImage bi : images.values ()) {
+            this.pagesIndexes.add (totalHeight);
+            totalHeight += bi.getHeight ();
+        }
+        this.height = totalHeight;
     }
 
     public void show () {
@@ -82,24 +90,19 @@ public class ComiqueReader {
         }
 
         private Renderer () {
-            int totalHeight = 0;
-            for (final BufferedImage bi : images.values ()) {
-                totalHeight += bi.getHeight ();
-            }
-            this.height = totalHeight;
         }
 
-        private final int height;
         private static final long serialVersionUID = 1L;
     }
-    private void smoothScroll (final int wheelRotation) {
+    
+    private void smoothScroll (final int direction, int ticks) {
         final int[] counter = new int [1];
-        counter[0] = 40;
+        counter[0] = ticks;
         SwingUtilities.invokeLater (new Runnable () {
             @Override
             public void run () {
                 if (counter[0] > 0) {
-                    translate (wheelRotation);
+                    translate (direction);
                     counter[0]--;
                     SwingUtilities.invokeLater (this);
                 }
@@ -113,8 +116,23 @@ public class ComiqueReader {
         jc.scrollRectToVisible (new Rectangle (vp, jsp.getViewport ().getSize ()));
     }
 
+    private void pageSwitch (boolean up) {
+        final Point vp = jsp.getViewport ().getViewPosition ();
+        final Integer next;
+        if (up) {
+            next = this.pagesIndexes.higher (vp.y);
+        } else {
+            next = this.pagesIndexes.lower (vp.y);
+        }
+        if (null != next) {
+            translate (next - vp.y);
+        }
+    }
+
     private final int[] screenRes;
     private final Map<Integer, BufferedImage> images;
+    private final int height;
+    private final NavigableSet<Integer> pagesIndexes = new TreeSet<Integer> ();
     
     private final MouseAdapter mouseListener = new MouseAdapter () {
         @Override
@@ -135,7 +153,7 @@ public class ComiqueReader {
         @Override
         public void mouseWheelMoved (MouseWheelEvent e) {
             final int wheelRotation = e.getWheelRotation ();
-            smoothScroll (wheelRotation);
+            smoothScroll (wheelRotation, 50);
         }
         
         private int y;
@@ -146,14 +164,23 @@ public class ComiqueReader {
         public void eventDispatched (AWTEvent event) {
             if (event instanceof KeyEvent) {
                 final KeyEvent e = (KeyEvent) event;
-                if (e.getKeyCode () == KeyEvent.VK_ESCAPE) {
-                    System.exit (0);
-                }
-                if (e.getKeyCode () == KeyEvent.VK_UP) {
-                    smoothScroll (-1);
-                }
-                if (e.getKeyCode () == KeyEvent.VK_DOWN) {
-                    smoothScroll (+1);
+                if (e.getID () == KeyEvent.KEY_PRESSED) {
+                    if (e.getKeyCode () == KeyEvent.VK_ESCAPE) {
+                        System.exit (0);
+                    }
+                    if (e.getKeyCode () == KeyEvent.VK_UP) {
+                        smoothScroll (-1, 100);
+                    }
+                    if (e.getKeyCode () == KeyEvent.VK_DOWN) {
+                        smoothScroll (+1, 100);
+                    }
+                    
+                    if (e.getKeyCode () == KeyEvent.VK_PAGE_UP) {
+                        pageSwitch (false);
+                    }
+                    if (e.getKeyCode () == KeyEvent.VK_PAGE_DOWN) {
+                        pageSwitch (true);
+                    }
                 }
             }
         }
