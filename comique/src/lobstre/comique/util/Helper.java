@@ -97,15 +97,20 @@ public class Helper {
                         }
                         
                         final double srcWidth = sourceImage.getWidth ();
-                        final double srcHeight = sourceImage.getHeight ();
-                        final double screenWidth = width;
-                        final double desiredHeight = srcHeight * screenWidth / srcWidth;
-                        final int height = (int) Math.ceil (desiredHeight);
                         
-                        final Image scaledSource = sourceImage.getScaledInstance (width, height, Image.SCALE_SMOOTH);
-                        final BufferedImage targetImage = new BufferedImage (width, height, sourceImage.getType ());
-                        targetImage.createGraphics ().drawImage (scaledSource, 0, 0, null);
-                        images.put (pageId, targetImage);
+                        if (srcWidth == width) {
+                            // Nothing to do :)
+                            images.put (pageId, sourceImage);
+                        } else {
+                            final double srcHeight = sourceImage.getHeight ();
+                            final double desiredHeight = srcHeight * (double) width / srcWidth;
+                            final int height = (int) Math.ceil (desiredHeight);
+                            
+                            final Image scaledSource = sourceImage.getScaledInstance (width, height, Image.SCALE_SMOOTH);
+                            final BufferedImage targetImage = new BufferedImage (width, height, sourceImage.getType ());
+                            targetImage.createGraphics ().drawImage (scaledSource, 0, 0, null);
+                            images.put (pageId, targetImage);
+                        }
                     } catch (final IOException e) {
                         e.printStackTrace ();
                     } catch (final Throwable t) {
