@@ -96,15 +96,18 @@ public class ComiqueReader {
     }
     
     private void smoothScroll (final int direction, int ticks) {
+        smoothScrolling = true;
         final int[] counter = new int [1];
         counter[0] = ticks;
         SwingUtilities.invokeLater (new Runnable () {
             @Override
             public void run () {
-                if (counter[0] > 0) {
-                    translate (direction);
-                    counter[0]--;
-                    SwingUtilities.invokeLater (this);
+                if (smoothScrolling) {
+                    if (counter[0] > 0) {
+                        translate (direction);
+                        counter[0]--;
+                        SwingUtilities.invokeLater (this);
+                    }
                 }
             }
         });
@@ -117,6 +120,7 @@ public class ComiqueReader {
     }
 
     private void pageSwitch (boolean up) {
+        smoothScrolling = false;
         final Point vp = jsp.getViewport ().getViewPosition ();
         final Integer next;
         if (up) {
@@ -129,6 +133,7 @@ public class ComiqueReader {
         }
     }
 
+    private boolean smoothScrolling = false;
     private final int[] screenRes;
     private final Map<Integer, BufferedImage> images;
     private final int height;
@@ -138,9 +143,9 @@ public class ComiqueReader {
         @Override
         public void mouseDragged(final MouseEvent e) {
             final int eventY = e.getYOnScreen ();
-            
             final int diffY = - eventY + y;
             
+            smoothScrolling = false;
             translate (diffY);
             
             y = eventY;
