@@ -6,7 +6,7 @@ A fast comic book reader implemented in Java for desktop computers.
 
 I wrote this software for fun and because I couldn't find a simple tool for this purpose.
 
-It is fast, it displays pages and scrolls very very smoothly, but it requires quite much memory and loading is long.
+It is fast, it displays pages and scrolls very very smoothly, but it requires as much memory as the uncompressed images files and therefore loading is quite long.
 
 # Usage
 
