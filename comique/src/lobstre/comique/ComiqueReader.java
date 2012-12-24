@@ -49,7 +49,7 @@ public class ComiqueReader {
         SwingUtilities.invokeLater (new Runnable () {
             @Override
             public void run () {
-                final JFrame jf = new JFrame ("ComiqueInternal");
+                final JFrame jf = new JFrame ("Comique");
                 jf.setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
                 jf.setUndecorated (true);
                 jf.setSize (new Dimension (screenRes[0], screenRes [1]));

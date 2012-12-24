@@ -32,7 +32,7 @@ public class FileChooserDialog {
         SwingUtilities.invokeLater (new Runnable () {
             @Override
             public void run () {
-                final JFrame frame = new JFrame ("ComiqueInternal file chooser");
+                final JFrame frame = new JFrame ("Comique file chooser");
                 final JLabel text = new JLabel ("Drop here a file or directory you'd like to read...");
                 text.setHorizontalAlignment (SwingConstants.CENTER);
                 frame.getContentPane ().add (text, BorderLayout.CENTER);

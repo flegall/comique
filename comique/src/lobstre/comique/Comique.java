@@ -1,52 +1,35 @@
 package lobstre.comique;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
+import java.util.Map;
+
+import lobstre.comique.util.Helper;
 
 public class Comique {
     public static void main (final String[] args) {
-        // Determine java /bin dir
-        final String javaHome = System.getProperty ("java.home");
-        final File javaDir = new File (javaHome);
-        final File javaBinDir = new File (javaDir, "bin");
+        final int[] screenRes = Helper.getScreenResolution ();
         
-        // Determine current class path
-        final String classPath = System.getProperty ("java.class.path");
+        final FileChooserDialog fcd = new FileChooserDialog (screenRes);
+        fcd.show ();
+        final File droppedFile = fcd.getFile ();
         
-        // Determine maximum memory
-        // 64 bits architecture allows larger memory windows.
-        final String osArch = System.getProperty ("os.arch");
-        final String memoryOption;
-        if (osArch.endsWith ("64")) {
-            memoryOption = "-Xmx4000M";
+        final File directory;
+        if (droppedFile.isDirectory ()) {
+            directory = droppedFile;
         } else {
-            memoryOption = "-Xmx1000M";
+            directory = droppedFile.getParentFile ();
         }
-        
-        // Prepare commands
-        final String[] commands = new String [] {
-            javaBinDir + File.separator + "java",
-            "-cp",
-            classPath,
-            memoryOption,
-            ComiqueInternal.class.getName (),
-        };
 
-        // Execute the subprocess
-        try {
-            final Process process = Runtime.getRuntime ().exec (commands);
-            int read;
-            while (-1 != (read = process.getErrorStream ().read ())) {
-                System.err.write (read);
-            }
-            while (-1 != (read = process.getInputStream ().read ())) {
-                System.out.write (read);
-            }
-     
-            int exitValue = process.exitValue ();
-            System.out.println ("Exit Value : " + exitValue);
-        } catch (final IOException e) {
-            e.printStackTrace();
-        }
+        final ProgressDialog pd = new ProgressDialog (screenRes);
+        pd.show ();
+
+        final Map<Integer, BufferedImage> images = Helper.loadFiles (directory, screenRes [0], pd.getProgressListener ());
+
+        pd.hide ();
+        System.out.println ("Done: " + images.size () + " images loaded!");
+
+        final ComiqueReader cr = new ComiqueReader (images, screenRes);
+        cr.show ();
     }
 }
