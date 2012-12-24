@@ -4,7 +4,9 @@ import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -14,6 +16,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.imageio.ImageIO;
+
+import com.sun.image.codec.jpeg.ImageFormatException;
+import com.sun.image.codec.jpeg.JPEGCodec;
+import com.sun.image.codec.jpeg.JPEGImageDecoder;
 
 public class Helper {
     
@@ -89,11 +95,27 @@ public class Helper {
                         if (pageId > 5 && LOAD_ONLY_FIVE_PAGES) {
                             return;
                         }
-                        final BufferedImage sourceImage;
-                        // Silly concurrency bug in jpeg plugin : http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6986863
-                        // Remove synchronized when fixed :(
-                        synchronized (Helper.class) {
-                            sourceImage = ImageIO.read (f);
+                        BufferedImage sourceImage;
+                        
+                        BufferedInputStream stream = null;
+                        
+                        try {
+                            stream = new BufferedInputStream (
+                                    new FileInputStream (f));
+                            final JPEGImageDecoder decoder = 
+                                    JPEGCodec.createJPEGDecoder (stream);
+                            sourceImage = decoder.decodeAsBufferedImage ();
+                        } catch (ImageFormatException ife) {
+                            // Fall back to traditional reader for other formats
+                            // Synchronized due to this bug : 
+                            // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6986863
+                            synchronized (Helper.class) {
+                                sourceImage = ImageIO.read (f);
+                            }
+                        } finally {
+                            if (stream != null) {
+                                stream.close ();
+                            }
                         }
                         
                         final double srcWidth = sourceImage.getWidth ();
