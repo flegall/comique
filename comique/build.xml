@@ -18,7 +18,7 @@
         description="generate the distribution" >
     <jar jarfile="output/comique.jar" basedir="bin/">
         <manifest>
-            <attribute name="Main-Class" value="lobstre.comique.Comique"/>
+            <attribute name="Main-Class" value="lobstre.comique.ComiqueStartup"/>
         </manifest>
    </jar>
   </target>
