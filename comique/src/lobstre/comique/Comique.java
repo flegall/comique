@@ -10,15 +10,13 @@ public class Comique {
         final File javaBinDir = new File (javaDir, "bin");
         
         final String classPath = System.getProperty ("java.class.path");
-        final String libraryPath = System.getProperty ("java.library.path");
         
         final String[] commands = new String [] {
             javaBinDir + File.separator + "java",
             "-cp",
             classPath,
-            "-Djava.library.path="+libraryPath,
+            "-Xmx1024M",
             ComiqueInternal.class.getName (),
-            "-Xmx8192M"
         };
 
         try {
