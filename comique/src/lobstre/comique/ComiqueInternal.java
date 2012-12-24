@@ -6,7 +6,7 @@ import java.util.Map;
 
 import lobstre.comique.util.Helper;
 
-public class Comique {
+public class ComiqueInternal {
     public static void main (final String[] args) {
         final int[] screenRes = Helper.getScreenResolution ();
         

@@ -81,7 +81,7 @@ public class ProgressDialog {
     }
 
     private final int[] screenRes;
-    private final JFrame jFrame = new JFrame ("Comique - loading");
+    private final JFrame jFrame = new JFrame ("ComiqueInternal - loading");
     private final JProgressBar progressBar = new JProgressBar ();
 
     private static final int PROGRESS_BAR_WIDTH = 200;
