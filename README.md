@@ -11,7 +11,7 @@ It is fast, it displays pages and scrolls very very smoothly, but it requires as
 # Usage
 
 - Compile or download comique.jar from [here](http://flegall.github.com/comique/comique.jar)
-- Launch comique.jar (eventually make a script that correctly sets the appropriate memory -Xmx if you're using a large display)
+- Launch comique.jar
 - Drop a folder or a file within a folder onto the dialog.
 - Wait for loading :)
 - Read and browse : using arrow keys, mouse drags, mouse wheel, page up/page down
