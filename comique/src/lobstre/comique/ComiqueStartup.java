@@ -18,7 +18,7 @@ public class ComiqueStartup {
         final String osArch = System.getProperty ("os.arch");
         final String memoryOption;
         if (osArch.endsWith ("64")) {
-            memoryOption = "-Xmx4000M";
+            memoryOption = "-Xmx32000M";
         } else {
             memoryOption = "-Xmx1000M";
         }
