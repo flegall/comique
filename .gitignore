@@ -4,6 +4,7 @@
 *.jar
 comique/output/*
 comique/bin/*
+comique/target/*
 
 
 # Mac stuff
