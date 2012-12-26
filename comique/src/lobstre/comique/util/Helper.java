@@ -7,7 +7,11 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ExecutorService;
@@ -16,10 +20,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.imageio.ImageIO;
-
-import com.sun.image.codec.jpeg.ImageFormatException;
-import com.sun.image.codec.jpeg.JPEGCodec;
-import com.sun.image.codec.jpeg.JPEGImageDecoder;
 
 public class Helper {
     
@@ -97,24 +97,13 @@ public class Helper {
                         }
                         BufferedImage sourceImage;
                         
-                        BufferedInputStream stream = null;
-                        
-                        try {
-                            stream = new BufferedInputStream (
-                                    new FileInputStream (f));
-                            final JPEGImageDecoder decoder = 
-                                    JPEGCodec.createJPEGDecoder (stream);
-                            sourceImage = decoder.decodeAsBufferedImage ();
-                        } catch (ImageFormatException ife) {
+                        sourceImage = tryDecodeUsingJpegCodec (f);
+                        if (null == sourceImage) {
                             // Fall back to traditional reader for other formats
                             // Synchronized due to this bug : 
                             // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6986863
                             synchronized (Helper.class) {
                                 sourceImage = ImageIO.read (f);
-                            }
-                        } finally {
-                            if (stream != null) {
-                                stream.close ();
                             }
                         }
                         
@@ -125,7 +114,7 @@ public class Helper {
                             images.put (pageId, sourceImage);
                         } else {
                             final double srcHeight = sourceImage.getHeight ();
-                            final double desiredHeight = srcHeight * (double) width / srcWidth;
+                            final double desiredHeight = srcHeight * width / srcWidth;
                             final int height = (int) Math.ceil (desiredHeight);
                             
                             final Image scaledSource = sourceImage.getScaledInstance (width, height, Image.SCALE_SMOOTH);
@@ -157,5 +146,69 @@ public class Helper {
         
         return images;
     }
+    
+    /**
+     * Try decoding using Sun's JPEG Codec, (faster than java ImageIO and
+     * doesn't have any concurrency bug)
+     * <p>
+     * If not available on current JVM or couldn't decode image,, return null.
+     * 
+     * @param f
+     *            a {@link File} instance
+     * @return a {@link BufferedImage} if could be decoded, null if not.
+     */
+    static BufferedImage tryDecodeUsingJpegCodec (final File f) {
+        BufferedInputStream stream = null;
+        Class<?> imageFormatExceptionClass = null;
+        try {
+            imageFormatExceptionClass = Class.forName (COM_SUN_IMAGE_CODEC_JPEG_IMAGE_FORMAT_EXCEPTION);
+            stream = new BufferedInputStream (new FileInputStream (f));
+            final Class<?> jpegCodec = Class.forName (COM_SUN_IMAGE_CODEC_JPEG_JPEG_CODEC);
+            final Method createJPEGDecoder = jpegCodec.getMethod (CREATE_JPEG_DECODER_METHODNAME, InputStream.class);
+            final Object decoder = createJPEGDecoder.invoke (null, stream);
+            final Method decodeAsBufferedImage = decoder.getClass ().getMethod (DECODE_AS_BUFFERED_IMAGE_METHODNAME);
+            return (BufferedImage) decodeAsBufferedImage.invoke (decoder);
+        } catch (final ClassNotFoundException e) {
+            // Unsupported by this JVM : no need to log, returning null
+            return null;
+        } catch (final SecurityException e) {
+            e.printStackTrace();
+            return null;
+        } catch (final NoSuchMethodException e) {
+            e.printStackTrace();
+            return null;
+        } catch (final IllegalArgumentException e) {
+            e.printStackTrace();
+            return null;
+        } catch (final IllegalAccessException e) {
+            e.printStackTrace();
+            return null;
+        } catch (final InvocationTargetException e) {
+            if (imageFormatExceptionClass.isInstance (e.getCause ())) {
+                // Unsupported file format, returning null
+                return null;
+            } else {
+                e.printStackTrace();
+                return null; 
+            }
+        } catch (final FileNotFoundException e) {
+            e.printStackTrace();
+            return null;
+        } finally {
+            if (stream != null) {
+                try {
+                    stream.close ();
+                } catch (final IOException e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            }
+        }
+    }
+
+    private static final String DECODE_AS_BUFFERED_IMAGE_METHODNAME = "decodeAsBufferedImage";
+    private static final String CREATE_JPEG_DECODER_METHODNAME = "createJPEGDecoder";
+    private static final String COM_SUN_IMAGE_CODEC_JPEG_JPEG_CODEC = "com.sun.image.codec.jpeg.JPEGCodec";
+    private static final String COM_SUN_IMAGE_CODEC_JPEG_IMAGE_FORMAT_EXCEPTION = "com.sun.image.codec.jpeg.ImageFormatException";
 
 }
