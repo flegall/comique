@@ -21,7 +21,8 @@ It is fast, it displays pages and scrolls very very smoothly, but it requires as
 Java 1.6
 
 # Build
-Use Maven to generate the jar file (goal 'package' should do it)
+- Use Maven to build the java-unrar dependency and install it.
+- Use Maven to generate the jar file (goal 'package' should do it).
 
 # License
 
