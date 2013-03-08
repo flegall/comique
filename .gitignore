@@ -2,10 +2,12 @@
 ###################
 *.class
 *.jar
+.classpath
+.project
 comique/output/*
 comique/bin/*
 comique/target/*
-
+comique/.settings/*
 
 # Mac stuff
 .DS_Store
