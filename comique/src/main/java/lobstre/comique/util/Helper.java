@@ -107,6 +107,9 @@ public class Helper {
                                 sourceImage = ImageIO.read (f);
                             }
                         }
+                        if (null == sourceImage) {
+                            return;
+                        }
                         
                         final double srcWidth = sourceImage.getWidth ();
                         
