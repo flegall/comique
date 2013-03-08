@@ -2,7 +2,8 @@ package lobstre.comique.util;
 
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
-import java.awt.Image;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -113,14 +114,24 @@ public class Helper {
                             // Nothing to do :)
                             images.put (pageId, sourceImage);
                         } else {
+                            // Computes desired height
                             final double srcHeight = sourceImage.getHeight ();
                             final double desiredHeight = srcHeight * width / srcWidth;
                             final int height = (int) Math.ceil (desiredHeight);
+                            final double scaleFactor = (double) width / (double) srcWidth;
                             
-                            final Image scaledSource = sourceImage.getScaledInstance (width, height, Image.SCALE_SMOOTH);
-                            final BufferedImage targetImage = new BufferedImage (width, height, sourceImage.getType ());
-                            targetImage.createGraphics ().drawImage (scaledSource, 0, 0, null);
-                            images.put (pageId, targetImage);
+                            // Perform scaling
+                            BufferedImage scaledImage = new BufferedImage (
+                                    width, 
+                                    height, 
+                                    sourceImage.getType ());
+                            final AffineTransform at = new AffineTransform();
+                            at.scale(scaleFactor, scaleFactor);
+                            final AffineTransformOp scaleOp = 
+                                    new AffineTransformOp(at, AffineTransformOp.TYPE_BICUBIC);
+                            scaledImage = scaleOp.filter(sourceImage, scaledImage);
+                            
+                            images.put (pageId, scaledImage);
                         }
                     } catch (final IOException e) {
                         e.printStackTrace ();
