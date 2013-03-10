@@ -38,7 +38,7 @@ public class Comique {
         final ProgressDialog pd = new ProgressDialog (screenRes);
         pd.show ();
 
-        final Map<Integer, BufferedImage> images = Helper.loadFiles (directory, screenRes [0], pd.getProgressListener ());
+        final Map<Integer, BufferedImage> images = FileLoadingHelper.loadFiles (directory, screenRes [0], pd.getProgressListener ());
 
         pd.hide ();
         System.out.println ("Done: " + images.size () + " images loaded!");
