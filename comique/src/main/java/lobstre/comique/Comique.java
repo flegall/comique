@@ -5,7 +5,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -65,11 +64,6 @@ public class Comique {
             } else {
                 providers.add (new ImageFileProvider() {
                     @Override
-                    public File getFile () {
-                        return f;
-                    }
-
-                    @Override
                     public byte[] getImageFile () {
                         try {
                             final InputStream fis = new FileInputStream (f);
@@ -109,40 +103,10 @@ public class Comique {
             final List<ImageFileProvider> providers = new ArrayList<ImageFileProvider> ();
             Enumeration<? extends ZipEntry> entries = new ZipFile (droppedFile).entries ();
             
-            final File parentDir = makeTempDir ();
             for (int i = 1; entries.hasMoreElements (); i++) {
                 entries.nextElement ();
                 final int finalI = i;
                 providers.add (new ImageFileProvider() {
-                    @Override
-                    public File getFile () {
-                        try {
-                            // Make a new zipFile and jump to the correct entry
-                            final ZipFile zf = new ZipFile (droppedFile);
-                            final Enumeration<? extends ZipEntry> es = zf.entries ();
-                            ZipEntry ze = null;
-                            for (int j = 0; j < finalI; j++) {
-                                ze = es.nextElement ();
-                            }
-                            
-                            // Prepare the temporary file
-                            final File file = createTempFile (parentDir, getFileName (ze.getName ()));
-                            
-                            // Unzip
-                            final InputStream is = zf.getInputStream (ze);
-                            final OutputStream fos = new FileOutputStream(file);
-                            copy (is, fos);
-                            
-                            return file;
-                        } catch (ZipException e) {
-                            e.printStackTrace();
-                            return null;
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            return null;
-                        }
-                    }
-
                     @Override
                     public byte[] getImageFile () {
                         try {
@@ -201,34 +165,9 @@ public class Comique {
             
             final Archive archive = new Archive (droppedFile);
             final List<FileHeader> headers = archive.getFileHeaders ();
-            final File parentDir = makeTempDir ();
             for (int i = 0; i < headers.size (); i++) {
                 final int finalI = i;
                 providers.add (new ImageFileProvider() {
-                    @Override
-                    public File getFile () {
-                        try {
-                            final Archive archive = new Archive (droppedFile);
-                            final List<FileHeader> headers = archive.getFileHeaders ();
-                            FileHeader fh = headers.get (finalI);
-                            final String fileName = getFileName (fh.getFileNameString ());
-                            final File imgFile = createTempFile (parentDir, fileName);
-                            final FileOutputStream fos = new FileOutputStream (imgFile);
-                            try {
-                                archive.extractFile (fh, fos);
-                            } finally {
-                                fos.close ();
-                            }
-                            return imgFile;
-                        } catch (RarException e) {
-                            e.printStackTrace ();
-                            return null;
-                        } catch (IOException e) {
-                            e.printStackTrace ();
-                            return null;
-                        }
-                    }
-
                     @Override
                     public byte[] getImageFile () {
                         try {
@@ -263,29 +202,7 @@ public class Comique {
             return null;
         }
     }
-
-    private static File makeTempDir () throws IOException {
-        final File parentDir = File.createTempFile ("comique", "avec-ms");
-        parentDir.delete ();
-        parentDir.mkdir ();
-        parentDir.deleteOnExit ();
-        return parentDir;
-    }
-
-    private static File createTempFile (final File parentDir, final String fileName) throws IOException {
-        final File imgFile = new File (parentDir, fileName);
-        imgFile.createNewFile ();
-        imgFile.deleteOnExit ();
-        return imgFile;
-    }
-
-    private static String getFileName (final String fileNameString) {
-        final String fileName = fileNameString
-                .replace ('/', '_')
-                .replace ('\\', '_');
-        return fileName;
-    }
-
+    
     private static void copy (final InputStream is, final OutputStream fos) throws IOException {
         int size;
         byte[] buffer = new byte [100*1000];

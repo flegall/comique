@@ -4,9 +4,8 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -20,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.imageio.ImageIO;
+import javax.imageio.stream.MemoryCacheImageInputStream;
 
 import lobstre.comique.util.Helper;
 
@@ -79,22 +79,26 @@ public class FileLoadingHelper {
                         }
                         
                         // Extract the file
-                        final File f = ifp.getFile ();
+                        byte[] imageFile = ifp.getImageFile ();
                         
                         // Decode the image
                         BufferedImage sourceImage;
-                        sourceImage = tryDecodeUsingJpegCodec (f);
+                        sourceImage = tryDecodeUsingJpegCodec (imageFile);
                         if (null == sourceImage) {
                             // Fall back to traditional reader for other formats
                             // Synchronized due to this bug : 
                             // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6986863
                             synchronized (Helper.class) {
-                                sourceImage = ImageIO.read (f);
+                                final ByteArrayInputStream bais = new ByteArrayInputStream (imageFile);
+                                final MemoryCacheImageInputStream mciis = new MemoryCacheImageInputStream (bais);
+                                sourceImage = ImageIO.read (mciis);
                             }
                         }
                         if (null == sourceImage) {
                             return;
                         }
+                        // Help GC before rescaling
+                        imageFile = null;
                         
                         // Eventually resize the image
                         final double srcWidth = sourceImage.getWidth ();
@@ -153,16 +157,16 @@ public class FileLoadingHelper {
      * <p>
      * If not available on current JVM or couldn't decode image,, return null.
      * 
-     * @param f
-     *            a {@link File} instance
+     * @param imageFile
+     *            the byte array content
      * @return a {@link BufferedImage} if could be decoded, null if not.
      */
-    public static BufferedImage tryDecodeUsingJpegCodec (final File f) {
+    public static BufferedImage tryDecodeUsingJpegCodec (final byte[] imageFile) {
         BufferedInputStream stream = null;
         Class<?> imageFormatExceptionClass = null;
         try {
             imageFormatExceptionClass = Class.forName (COM_SUN_IMAGE_CODEC_JPEG_IMAGE_FORMAT_EXCEPTION);
-            stream = new BufferedInputStream (new FileInputStream (f));
+            stream = new BufferedInputStream (new ByteArrayInputStream (imageFile));
             final Class<?> jpegCodec = Class.forName (COM_SUN_IMAGE_CODEC_JPEG_JPEG_CODEC);
             final Method createJPEGDecoder = jpegCodec.getMethod (CREATE_JPEG_DECODER_METHODNAME, InputStream.class);
             final Object decoder = createJPEGDecoder.invoke (null, stream);
@@ -191,9 +195,6 @@ public class FileLoadingHelper {
                 e.printStackTrace();
                 return null; 
             }
-        } catch (final FileNotFoundException e) {
-            e.printStackTrace();
-            return null;
         } finally {
             if (stream != null) {
                 try {
