@@ -7,7 +7,6 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 
-import lobstre.comique.util.Helper.ProgressListener;
 
 /**
  * Progress Dialog implementation
