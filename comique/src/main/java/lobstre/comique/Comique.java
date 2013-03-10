@@ -11,7 +11,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Map;
+import java.util.NavigableMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -46,7 +46,7 @@ public class Comique {
         final ProgressDialog pd = new ProgressDialog (screenRes);
         pd.show ();
 
-        final Map<Integer, BufferedImage> images = FileLoadingHelper.loadFiles (null, providers, screenRes [0], pd.getProgressListener ());
+        final NavigableMap<Integer, BufferedImage> images = FileLoadingHelper.loadFiles (null, providers, screenRes [0], pd.getProgressListener ());
 
         pd.hide ();
         System.out.println ("Done: " + images.size () + " images loaded!");
