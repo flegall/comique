@@ -12,7 +12,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.image.BufferedImage;
-import java.util.Map;
 import java.util.NavigableMap;
 
 import javax.swing.JComponent;
@@ -34,9 +33,9 @@ public class ComiqueReader {
     public ComiqueReader (final NavigableMap<Integer, BufferedImage> images, final int[] screenRes) {
         this.images = images;
         this.screenRes = screenRes;
-        this.jc = new Renderer ();
-        this.jsp = new JScrollPane (jc);
-        this.height = 400;
+        this.renderer = new Renderer ();
+        this.jsp = new JScrollPane (renderer);
+        this.currentPage = images.firstKey ();
     }
 
     public void show () {
@@ -57,11 +56,11 @@ public class ComiqueReader {
                 jsp.setVerticalScrollBarPolicy (ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
                 jf.setContentPane (jsp);
                 
-                jc.addMouseMotionListener (mouseListener);
-                jc.addMouseListener (mouseListener);
-                jc.addMouseWheelListener (mouseListener);
+                renderer.addMouseMotionListener (mouseListener);
+                renderer.addMouseListener (mouseListener);
+                renderer.addMouseWheelListener (mouseListener);
                 
-                jc.getToolkit ().addAWTEventListener (keyListener, AWTEvent.KEY_EVENT_MASK);
+                renderer.getToolkit ().addAWTEventListener (keyListener, AWTEvent.KEY_EVENT_MASK);
             }
         });
     }
@@ -69,18 +68,16 @@ public class ComiqueReader {
     private final class Renderer extends JComponent {
         @Override
         public Dimension getPreferredSize () {
-            return new Dimension (screenRes[0], height);
+            final BufferedImage currentImage = images.get (currentPage);
+            return new Dimension (screenRes[0], currentImage.getHeight ());
         }
 
         @Override
         protected void paintComponent (final Graphics g) {
             super.paintComponent (g);
             
-            int y = 0;
-            for (final BufferedImage bi : images.values ()) {
-                g.drawImage (bi, 0, y, null);
-                y += bi.getHeight ();
-            }
+            final BufferedImage bi = images.get (currentPage);
+            g.drawImage (bi, 0, 0, null);
         }
 
         private Renderer () {
@@ -110,27 +107,33 @@ public class ComiqueReader {
     private void translate (final int diffY) {
         final Point vp = jsp.getViewport ().getViewPosition ();
         vp.translate (0, diffY);
-        jc.scrollRectToVisible (new Rectangle (vp, jsp.getViewport ().getSize ()));
+        renderer.scrollRectToVisible (new Rectangle (vp, jsp.getViewport ().getSize ()));
     }
 
     private void pageSwitch (boolean up) {
-//        smoothScrolling = false;
-//        final Point vp = jsp.getViewport ().getViewPosition ();
-//        final Integer next;
-//        if (up) {
-//            next = this.pagesIndexes.higher (vp.y);
-//        } else {
-//            next = this.pagesIndexes.lower (vp.y);
-//        }
-//        if (null != next) {
-//            translate (next - vp.y);
-//        }
+        Integer nextKey;
+        if (up) {
+            nextKey = images.higherKey (this.currentPage);
+        } else {
+            nextKey = images.lowerKey (this.currentPage);
+        }
+        
+        smoothScrolling = false;
+        if (null != nextKey) {
+            currentPage = nextKey;
+            renderer.repaint ();
+            renderer.invalidate ();
+            renderer.scrollRectToVisible (
+                new Rectangle (
+                        new Point (), 
+                        jsp.getViewport ().getSize ()));
+        }
     }
 
     private boolean smoothScrolling = false;
+    private int currentPage;
     private final int[] screenRes;
-    private final Map<Integer, BufferedImage> images;
-    private final int height;
+    private final NavigableMap<Integer, BufferedImage> images;
     
     private final MouseAdapter mouseListener = new MouseAdapter () {
         @Override
@@ -166,17 +169,24 @@ public class ComiqueReader {
                     if (e.getKeyCode () == KeyEvent.VK_ESCAPE) {
                         System.exit (0);
                     }
-                    if (e.getKeyCode () == KeyEvent.VK_UP) {
+                    
+                    if (e.getKeyCode () == KeyEvent.VK_UP
+                        || e.getKeyCode () == KeyEvent.VK_K) {
                         smoothScroll (-1, 100);
                     }
-                    if (e.getKeyCode () == KeyEvent.VK_DOWN) {
+                    if (e.getKeyCode () == KeyEvent.VK_DOWN
+                        || e.getKeyCode () == KeyEvent.VK_J) {
                         smoothScroll (+1, 100);
                     }
                     
-                    if (e.getKeyCode () == KeyEvent.VK_PAGE_UP) {
+                    if (e.getKeyCode () == KeyEvent.VK_PAGE_UP 
+                        || e.getKeyCode () == KeyEvent.VK_LEFT
+                        || e.getKeyCode () == KeyEvent.VK_P) {
                         pageSwitch (false);
                     }
-                    if (e.getKeyCode () == KeyEvent.VK_PAGE_DOWN) {
+                    if (e.getKeyCode () == KeyEvent.VK_PAGE_DOWN
+                        || e.getKeyCode () == KeyEvent.VK_RIGHT
+                        || e.getKeyCode () == KeyEvent.VK_N) {
                         pageSwitch (true);
                     }
                 }
@@ -185,5 +195,5 @@ public class ComiqueReader {
     };
     
     private final JScrollPane jsp;
-    private final JComponent jc;
+    private final Renderer renderer;
 }
