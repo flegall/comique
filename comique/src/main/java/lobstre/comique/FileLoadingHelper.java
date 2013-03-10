@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ExecutorService;
@@ -36,6 +37,8 @@ public class FileLoadingHelper {
      * 
      * @param directory
      *            a directory {@link File}
+     * @param ifps
+     *            a {@link List} of {@link ImageFileProvider} instances
      * @param width
      *            the display width
      * @param progressListener an optional {@link ProgressListener}
@@ -44,6 +47,7 @@ public class FileLoadingHelper {
      */
     public static Map<Integer, BufferedImage> loadFiles (
             final File directory, 
+            final List<ImageFileProvider> ifps,
             final int width, 
             final ProgressListener progressListener) {
         
@@ -53,8 +57,7 @@ public class FileLoadingHelper {
     
         // Loading all images
         final Map<Integer, BufferedImage> images = new ConcurrentSkipListMap<Integer, BufferedImage> ();
-        final File[] files = directory.listFiles ();
-        final int totalPages = files.length;
+        final int totalPages = ifps.size ();
         
         // Starting 
         if (null != progressListener) {
@@ -64,7 +67,7 @@ public class FileLoadingHelper {
         final AtomicInteger counter = new AtomicInteger (0);
         // Iterating on all files
         for (int i = 0; i < totalPages; i++) {
-            final File f = files [i];
+            final ImageFileProvider ifp = ifps.get (i);
             final int pageId = i;
             es.submit (new Runnable () {
                 @Override
@@ -74,8 +77,12 @@ public class FileLoadingHelper {
                         if (pageId > 5 && LOAD_ONLY_FIVE_PAGES) {
                             return;
                         }
-                        BufferedImage sourceImage;
                         
+                        // Extract the file
+                        final File f = ifp.getFile ();
+                        
+                        // Decode the image
+                        BufferedImage sourceImage;
                         sourceImage = tryDecodeUsingJpegCodec (f);
                         if (null == sourceImage) {
                             // Fall back to traditional reader for other formats
@@ -89,8 +96,8 @@ public class FileLoadingHelper {
                             return;
                         }
                         
+                        // Eventually resize the image
                         final double srcWidth = sourceImage.getWidth ();
-                        
                         if (srcWidth == width) {
                             // Nothing to do :)
                             images.put (pageId, sourceImage);
@@ -106,12 +113,13 @@ public class FileLoadingHelper {
                                     width, 
                                     height, 
                                     sourceImage.getType ());
-                            final AffineTransform at = new AffineTransform();
-                            at.scale(scaleFactor, scaleFactor);
+                            final AffineTransform at = new AffineTransform ();
+                            at.scale (scaleFactor, scaleFactor);
                             final AffineTransformOp scaleOp = 
-                                    new AffineTransformOp(at, AffineTransformOp.TYPE_BICUBIC);
-                            scaledImage = scaleOp.filter(sourceImage, scaledImage);
+                                    new AffineTransformOp (at, AffineTransformOp.TYPE_BICUBIC);
+                            scaledImage = scaleOp.filter (sourceImage, scaledImage);
                             
+                            // Store the image
                             images.put (pageId, scaledImage);
                         }
                     } catch (final IOException e) {
