@@ -11,7 +11,7 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.Map;
+import java.util.NavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -42,10 +42,10 @@ public class FileLoadingHelper {
      * @param width
      *            the display width
      * @param progressListener an optional {@link ProgressListener}
-     * @return a {@link Map} of {@link Integer} page key to
+     * @return a {@link NavigableMap} of {@link Integer} page key to
      *         {@link BufferedImage} images
      */
-    public static Map<Integer, BufferedImage> loadFiles (
+    public static NavigableMap<Integer, BufferedImage> loadFiles (
             final File directory, 
             final List<ImageFileProvider> ifps,
             final int width, 
@@ -56,7 +56,7 @@ public class FileLoadingHelper {
         final ExecutorService es = Executors.newFixedThreadPool (cpus);
     
         // Loading all images
-        final Map<Integer, BufferedImage> images = new ConcurrentSkipListMap<Integer, BufferedImage> ();
+        final NavigableMap<Integer, BufferedImage> images = new ConcurrentSkipListMap<Integer, BufferedImage> ();
         final int totalPages = ifps.size ();
         
         // Starting 

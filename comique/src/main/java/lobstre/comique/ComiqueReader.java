@@ -13,8 +13,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.image.BufferedImage;
 import java.util.Map;
-import java.util.NavigableSet;
-import java.util.TreeSet;
+import java.util.NavigableMap;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -29,20 +28,15 @@ public class ComiqueReader {
 
     /**
      * Builds a {@link ComiqueReader} instance
-     * @param images a {@link Map} of {@link Integer} to {@link BufferedImage} images
+     * @param images a {@link NavigableMap} of {@link Integer} to {@link BufferedImage} images
      * @param screenRes an array containing the screen resolution
      */
-    public ComiqueReader (final Map<Integer, BufferedImage> images, final int[] screenRes) {
+    public ComiqueReader (final NavigableMap<Integer, BufferedImage> images, final int[] screenRes) {
         this.images = images;
         this.screenRes = screenRes;
         this.jc = new Renderer ();
         this.jsp = new JScrollPane (jc);
-        int totalHeight = 0;
-        for (final BufferedImage bi : images.values ()) {
-            this.pagesIndexes.add (totalHeight);
-            totalHeight += bi.getHeight ();
-        }
-        this.height = totalHeight;
+        this.height = 400;
     }
 
     public void show () {
@@ -120,24 +114,23 @@ public class ComiqueReader {
     }
 
     private void pageSwitch (boolean up) {
-        smoothScrolling = false;
-        final Point vp = jsp.getViewport ().getViewPosition ();
-        final Integer next;
-        if (up) {
-            next = this.pagesIndexes.higher (vp.y);
-        } else {
-            next = this.pagesIndexes.lower (vp.y);
-        }
-        if (null != next) {
-            translate (next - vp.y);
-        }
+//        smoothScrolling = false;
+//        final Point vp = jsp.getViewport ().getViewPosition ();
+//        final Integer next;
+//        if (up) {
+//            next = this.pagesIndexes.higher (vp.y);
+//        } else {
+//            next = this.pagesIndexes.lower (vp.y);
+//        }
+//        if (null != next) {
+//            translate (next - vp.y);
+//        }
     }
 
     private boolean smoothScrolling = false;
     private final int[] screenRes;
     private final Map<Integer, BufferedImage> images;
     private final int height;
-    private final NavigableSet<Integer> pagesIndexes = new TreeSet<Integer> ();
     
     private final MouseAdapter mouseListener = new MouseAdapter () {
         @Override
