@@ -9,4 +9,11 @@ public interface ImageFileProvider {
      * @return a {@link File} instance
      */
     public File getFile ();
+
+    /**
+     * Builds/Gets an array of byte containing the file to display
+     * 
+     * @return a byte array
+     */
+    public byte[] getImageFile ();
 }

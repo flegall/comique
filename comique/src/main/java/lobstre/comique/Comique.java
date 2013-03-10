@@ -1,10 +1,14 @@
 package lobstre.comique;
 
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -64,6 +68,22 @@ public class Comique {
                     public File getFile () {
                         return f;
                     }
+
+                    @Override
+                    public byte[] getImageFile () {
+                        try {
+                            final InputStream fis = new FileInputStream (f);
+                            final ByteArrayOutputStream baos = new ByteArrayOutputStream ();
+                            copy (fis, baos);
+                            return baos.toByteArray ();
+                        } catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                            return null;
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            return null;
+                        }
+                    }
                 });
             }
         }
@@ -109,20 +129,37 @@ public class Comique {
                             final File file = createTempFile (parentDir, getFileName (ze.getName ()));
                             
                             // Unzip
-                            byte[] buffer = new byte [100*1000];
                             final InputStream is = zf.getInputStream (ze);
-                            final FileOutputStream fos = new FileOutputStream(file);
-                            int size;
-                            try {
-                                while ((size = is.read (buffer, 0, buffer.length)) != -1) {
-                                    fos.write (buffer, 0, size);
-                                }
-                            } finally {
-                                fos.close ();
-                                is.close ();
-                            }
+                            final OutputStream fos = new FileOutputStream(file);
+                            copy (is, fos);
                             
                             return file;
+                        } catch (ZipException e) {
+                            e.printStackTrace();
+                            return null;
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            return null;
+                        }
+                    }
+
+                    @Override
+                    public byte[] getImageFile () {
+                        try {
+                            // Make a new zipFile and jump to the correct entry
+                            final ZipFile zf = new ZipFile (droppedFile);
+                            final Enumeration<? extends ZipEntry> es = zf.entries ();
+                            ZipEntry ze = null;
+                            for (int j = 0; j < finalI; j++) {
+                                ze = es.nextElement ();
+                            }
+                            
+                            // Unzip
+                            final InputStream is = zf.getInputStream (ze);
+                            final ByteArrayOutputStream baos = new ByteArrayOutputStream ();
+                            copy (is, baos);
+                            
+                            return baos.toByteArray ();
                         } catch (ZipException e) {
                             e.printStackTrace();
                             return null;
@@ -191,6 +228,30 @@ public class Comique {
                             return null;
                         }
                     }
+
+                    @Override
+                    public byte[] getImageFile () {
+                        try {
+                            final Archive archive = new Archive (droppedFile);
+                            final List<FileHeader> headers = archive.getFileHeaders ();
+                            final FileHeader fh = headers.get (finalI);
+                            
+                            final ByteArrayOutputStream baos = new ByteArrayOutputStream ();
+                            
+                            try {
+                                archive.extractFile (fh, baos);
+                            } finally {
+                                baos.close ();
+                            }
+                            return baos.toByteArray ();
+                        } catch (RarException e) {
+                            e.printStackTrace ();
+                            return null;
+                        } catch (IOException e) {
+                            e.printStackTrace ();
+                            return null;
+                        }
+                    }
                 });
             }
             return providers;
@@ -223,5 +284,18 @@ public class Comique {
                 .replace ('/', '_')
                 .replace ('\\', '_');
         return fileName;
+    }
+
+    private static void copy (final InputStream is, final OutputStream fos) throws IOException {
+        int size;
+        byte[] buffer = new byte [100*1000];
+        try {
+            while ((size = is.read (buffer, 0, buffer.length)) != -1) {
+                fos.write (buffer, 0, size);
+            }
+        } finally {
+            fos.close ();
+            is.close ();
+        }
     }
 }
