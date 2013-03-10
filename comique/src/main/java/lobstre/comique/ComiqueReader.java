@@ -148,7 +148,16 @@ public class ComiqueReader {
         }
         @Override
         public void mousePressed (MouseEvent e) {
-            y = e.getYOnScreen ();
+            if (SwingUtilities.isLeftMouseButton (e)) {
+                y = e.getYOnScreen ();
+            }
+            
+            if (SwingUtilities.isRightMouseButton (e)) {
+                pageSwitch (true);
+            }
+            if (SwingUtilities.isMiddleMouseButton (e)) {
+                pageSwitch (false);
+            }
         }
         
         @Override
@@ -175,18 +184,21 @@ public class ComiqueReader {
                         smoothScroll (-1, 100);
                     }
                     if (e.getKeyCode () == KeyEvent.VK_DOWN
-                        || e.getKeyCode () == KeyEvent.VK_J) {
+                        || e.getKeyCode () == KeyEvent.VK_J
+                        || e.getKeyCode () == KeyEvent.VK_SPACE) {
                         smoothScroll (+1, 100);
                     }
                     
                     if (e.getKeyCode () == KeyEvent.VK_PAGE_UP 
                         || e.getKeyCode () == KeyEvent.VK_LEFT
-                        || e.getKeyCode () == KeyEvent.VK_P) {
+                        || e.getKeyCode () == KeyEvent.VK_P
+                        || e.getKeyCode () == KeyEvent.VK_BACK_SPACE) {
                         pageSwitch (false);
                     }
                     if (e.getKeyCode () == KeyEvent.VK_PAGE_DOWN
                         || e.getKeyCode () == KeyEvent.VK_RIGHT
-                        || e.getKeyCode () == KeyEvent.VK_N) {
+                        || e.getKeyCode () == KeyEvent.VK_N
+                        || e.getKeyCode () == KeyEvent.VK_ENTER) {
                         pageSwitch (true);
                     }
                 }
