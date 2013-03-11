@@ -25,9 +25,20 @@ public class Comique {
     public static void main (final String[] args) {
         final int[] screenRes = Helper.getScreenResolution ();
         
-        final FileChooserDialog fcd = new FileChooserDialog (screenRes);
-        fcd.show ();
-        final File droppedFile = fcd.getFile ();
+        final File droppedFile;
+        if (0 == args.length) {
+            final FileChooserDialog fcd = new FileChooserDialog (screenRes);
+            fcd.show ();
+            droppedFile = fcd.getFile ();
+        }  else {
+            droppedFile = new File (args[0]);
+            if (!droppedFile.exists ()) {
+                final FileNotFoundException ex = new FileNotFoundException (
+                        "Can't find file : " + args [0]);
+                ex.printStackTrace ();
+                System.exit (-1);
+            }
+        }
         
         final List<ImageFileProvider> providers;
         if (droppedFile.isDirectory ()) {

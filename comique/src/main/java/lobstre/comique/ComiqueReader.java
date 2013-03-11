@@ -12,6 +12,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.NavigableMap;
 
 import javax.swing.JComponent;
@@ -19,6 +21,8 @@ import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
+
+import lobstre.comique.util.filedrop.FileDrop;
 
 /**
  * Reader 
@@ -55,6 +59,22 @@ public class ComiqueReader {
                 jsp.setHorizontalScrollBarPolicy (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
                 jsp.setVerticalScrollBarPolicy (ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
                 jf.setContentPane (jsp);
+                
+                new FileDrop (System.out, renderer, new FileDrop.Listener () {
+                    public void filesDropped (File[] files) {
+                        if (files.length > 0) {
+                            final String[] args = new String[] {files[0].getPath ()};
+                            final String[] cmds = ComiqueStartup.prepareCommands (args);
+                            try {
+                                Runtime.getRuntime ().exec (cmds);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                                return;
+                            }
+                            System.exit (0);
+                        }
+                    } 
+                }); 
                 
                 renderer.addMouseMotionListener (mouseListener);
                 renderer.addMouseListener (mouseListener);
