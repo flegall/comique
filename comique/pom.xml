@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>lobstre</groupId>
 	<artifactId>comique</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.9.1-SNAPSHOT</version>
 	<name>Comique</name>
 	<description>A java desktop comic book reader</description>
 	<build>
