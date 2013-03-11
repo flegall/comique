@@ -12,9 +12,11 @@ It is fast, it displays pages and scrolls very very smoothly, but it requires as
 
 - Compile or download comique.jar from [here](http://flegall.github.com/comique/comique.jar)
 - Launch comique.jar
-- Drop a folder or a file within a folder onto the dialog.
+- Drag & Drop a cbr/cbz file, an image directory or a file within an image directory onto the dialog.
 - Wait for loading :)
-- Read and browse : using arrow keys, mouse drags, mouse wheel, page up/page down
+- Read within the page: using up/down, j/k keys, space, mouse drags, mouse wheel.
+- Change pages : using left/right, enter, backspace, n/p keys.
+- Drag & Drop another file onto the display in order to load another file
 - Exit by pressing 'ESCAPE'
 
 # Requirements
