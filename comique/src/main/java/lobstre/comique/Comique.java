@@ -157,8 +157,9 @@ public class Comique {
     }
     
     private static boolean isRarArchive (final File droppedFile) {
+        Archive archive = null;
         try {
-            final Archive archive = new Archive (droppedFile);
+            archive = new Archive (droppedFile);
             final List<FileHeader> headers = archive.getFileHeaders ();
             return headers.size () > 0;
         } catch (RarException e) {
@@ -167,22 +168,32 @@ public class Comique {
         } catch (IOException e) {
             e.printStackTrace ();
             return false;
+        } finally {
+            try {
+                if (null != archive) {
+                    archive.close();
+                }
+			} catch (IOException e) {
+				e.printStackTrace ();
+	            return false;
+			}
         }
     }
     
     private static List<ImageFileProvider> unrar (final File droppedFile) {
+        final List<ImageFileProvider> providers = new ArrayList<ImageFileProvider> ();
+        Archive archive = null;
         try {
-            final List<ImageFileProvider> providers = new ArrayList<ImageFileProvider> ();
-            
-            final Archive archive = new Archive (droppedFile);
+            archive = new Archive (droppedFile);
             final List<FileHeader> headers = archive.getFileHeaders ();
             for (int i = 0; i < headers.size (); i++) {
                 final int finalI = i;
                 providers.add (new ImageFileProvider() {
                     @Override
                     public byte[] getImageFile () {
+                        Archive archive = null;
                         try {
-                            final Archive archive = new Archive (droppedFile);
+                            archive = new Archive (droppedFile);
                             final List<FileHeader> headers = archive.getFileHeaders ();
                             final FileHeader fh = headers.get (finalI);
                             
@@ -200,6 +211,15 @@ public class Comique {
                         } catch (IOException e) {
                             e.printStackTrace ();
                             return null;
+                        } finally {
+                            try {
+                                if (null != archive) {
+                                    archive.close ();
+                                }
+                            } catch (IOException e) {
+                                e.printStackTrace ();
+                                return null;
+                            }
                         }
                     }
                 });
@@ -211,6 +231,15 @@ public class Comique {
         } catch (IOException e) {
             e.printStackTrace ();
             return null;
+        } finally {
+            try {
+                if (null != archive) {
+                    archive.close ();
+                }
+            } catch (IOException e) {
+                e.printStackTrace ();
+                return null;
+            }
         }
     }
     
