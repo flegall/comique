@@ -29,19 +29,20 @@ public class ProgressDialog {
         SwingUtilities.invokeLater (new Runnable () {
             @Override
             public void run () {
-                jFrame.setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
+                jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-                jFrame.setSize (PROGRESS_BAR_WIDTH, PROGRESS_BAR_HEIGHT);
-                jFrame.setLocation (screenRes [0] / 2 - PROGRESS_BAR_WIDTH / 2, screenRes [1] / 2 - PROGRESS_BAR_HEIGHT / 2);
-                jFrame.setResizable (false);
+                jf.setSize(PROGRESS_BAR_WIDTH, PROGRESS_BAR_HEIGHT);
+                jf.setLocation(screenRes[0] / 2 - PROGRESS_BAR_WIDTH / 2, screenRes[1] / 2 - PROGRESS_BAR_HEIGHT / 2);
+                jf.setResizable(false);
 
                 final JPanel pane = new JPanel ();
                 pane.setLayout (new FlowLayout ());
                 progressBar.setValue (0);
                 progressBar.setStringPainted (true);
                 pane.add (progressBar);
-                jFrame.setContentPane (pane);
-                jFrame.setVisible (true);
+                jf.setContentPane (pane);
+                jf.setVisible (true);
+                jf.setAlwaysOnTop (true);
             }
         });
     }
@@ -73,14 +74,14 @@ public class ProgressDialog {
         SwingUtilities.invokeLater (new Runnable () {
             @Override
             public void run () {
-                jFrame.setVisible (false);
-                jFrame.dispose ();
+                jf.setVisible(false);
+                jf.dispose();
             }
         });
     }
 
     private final int[] screenRes;
-    private final JFrame jFrame = new JFrame ("Comique - loading");
+    private final JFrame jf = new JFrame ("Comique - loading");
     private final JProgressBar progressBar = new JProgressBar ();
 
     private static final int PROGRESS_BAR_WIDTH = 200;

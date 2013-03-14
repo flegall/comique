@@ -40,9 +40,10 @@ public class FileChooserDialog {
                 final int width = 300;
                 final int height = 80;
                 frame.setSize (width, height);
-                frame.setLocation (screenRes [0] / 2 - width / 2, screenRes [1] / 2 - height / 2);
+                frame.setLocation (80, 80);
                 frame.setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
                 frame.setVisible (true);
+                frame.setAlwaysOnTop (true);
 
                 new FileDrop (System.out, text, new FileDrop.Listener () {
                     public void filesDropped (File[] files) {
