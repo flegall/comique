@@ -6,12 +6,14 @@ import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Window;
 import java.awt.event.AWTEventListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.image.BufferedImage;
+import java.lang.reflect.Method;
 import java.io.File;
 import java.io.IOException;
 import java.util.NavigableMap;
@@ -46,20 +48,33 @@ public class ComiqueReader {
         SwingUtilities.invokeLater (new Runnable () {
             @Override
             public void run () {
-                final JFrame jf = new JFrame ("Comique");
+                final JFrame jf = new JFrame ();
                 jf.setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
-                jf.setUndecorated (true);
-                jf.setSize (new Dimension (screenRes[0], screenRes [1]));
-                jf.setLocationRelativeTo (null);
-                jf.setExtendedState (Frame.MAXIMIZED_BOTH);
-                jf.validate ();
-                jf.setVisible (true);
+
+                if (isMacOSX ()) {
+                    jf.setSize (new Dimension (600, 400));
+                    enableFullScreenMode (jf);
+                    SwingUtilities.invokeLater(new Runnable (){
+                        @Override
+                        public void run() {
+                            requestToggleFullScreen(jf);
+                        }
+                    });
+                } else {
+                    jf.setUndecorated(true);
+                    jf.setSize(new Dimension(screenRes[0], screenRes[1]));
+                    jf.setLocationRelativeTo(null);
+                    jf.setExtendedState (Frame.MAXIMIZED_BOTH);
+                    jf.validate();
+                }
+
+                jf.setVisible(true);
 
                 jsp.setBorder (null);
                 jsp.setHorizontalScrollBarPolicy (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
                 jsp.setVerticalScrollBarPolicy (ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-                jf.setContentPane (jsp);
-                
+                jf.add (jsp);
+
                 new FileDrop (System.out, renderer, new FileDrop.Listener () {
                     public void filesDropped (File[] files) {
                         if (files.length > 0) {
@@ -212,7 +227,7 @@ public class ComiqueReader {
                     if (e.getKeyCode () == KeyEvent.VK_PAGE_UP 
                         || e.getKeyCode () == KeyEvent.VK_LEFT
                         || e.getKeyCode () == KeyEvent.VK_P
-                        || e.getKeyCode () == KeyEvent.VK_BACK_SPACE) {
+                        || e.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
                         pageSwitch (false);
                     }
                     if (e.getKeyCode () == KeyEvent.VK_PAGE_DOWN
@@ -225,6 +240,35 @@ public class ComiqueReader {
             }
         }
     };
+
+    public static void enableFullScreenMode(Window window) {
+        try {
+            Class util = Class.forName("com.apple.eawt.FullScreenUtilities");
+            Class params[] = new Class[]{Window.class, Boolean.TYPE};
+            Method method = util.getMethod("setWindowCanFullScreen", params);
+            method.invoke(util, window, true);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private static void requestToggleFullScreen(final Window window) {
+        try {
+            final Class util = Class.forName("com.apple.eawt.Application");
+            final Method getApplicationMethod = util.getMethod("getApplication");
+            final Object application = getApplicationMethod.invoke(null);
+            final Class params[] = new Class[]{Window.class};
+            final Method method = util.getMethod("requestToggleFullScreen", params);
+            method.invoke(application, window);
+        } catch (Throwable t) {
+            System.out.println("Full screen mode is not supported");
+            t.printStackTrace();
+        }
+    }
+
+    private static boolean isMacOSX () {
+        return System.getProperty("os.name").contains("Mac OS X");
+    }
     
     private final JScrollPane jsp;
     private final Renderer renderer;
